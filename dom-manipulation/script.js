@@ -1,7 +1,23 @@
 // script.js
 // ... (previous code: quotes array, local/session storage, DOM manipulation, filtering)
 
-const SERVER_URL = 'https://my-json-server.typicode.com/your-username/your-repo/quotes'; // Replace with your JSON Server URL
+// *** 1. Set up your JSON Server (using my-json-server.typicode.com) ***
+//    a. Create a GitHub repository (if you don't have one already).
+//    b. Create a file named `db.json` in the root of your repository.
+//    c. Add your initial quote data to `db.json`.  For example:
+//
+//       {
+//         "quotes": [
+//           { "text": "Quote 1", "category": "Category 1" },
+//           { "text": "Quote 2", "category": "Category 2" }
+//         ]
+//       }
+//
+//    d. The `SERVER_URL` below should then be:
+//       `https://my-json-server.typicode.com/your-github-username/your-repo-name/quotes`
+//       (replace with your actual GitHub username and repo name).
+
+const SERVER_URL = 'https://my-json-server.typicode.com/your-github-username/your-repo-name/quotes'; // ***REPLACE THIS***
 
 async function fetchQuotesFromServer() {
     try {
@@ -14,7 +30,7 @@ async function fetchQuotesFromServer() {
     } catch (error) {
         console.error("Error fetching quotes from server:", error);
         showNotification("Error fetching quotes from server. Check the console.", "error");
-        return null; // Or handle the error as needed
+        return null; 
     }
 }
 
@@ -40,14 +56,13 @@ async function syncWithServer() {
     showNotification("Data synced successfully!");
 }
 
-
 function mergeQuotes(localQuotes, serverQuotes) {
     // Example: Simple merge (add new quotes, keep existing ones)
-    const merged = [...localQuotes]; // Start with local quotes
+    const merged = [...localQuotes]; 
 
     serverQuotes.forEach(serverQuote => {
-        const existsLocally = localQuotes.some(localQuote => localQuote.text === serverQuote.text);
-        if (!existsLocally) { // If the server quote is not in local storage, add it.
+        const existsLocally = localQuotes.some(localQuote => localQuote.text === serverQuote.text && localQuote.category === serverQuote.category);
+        if (!existsLocally) { 
             merged.push(serverQuote);
         }
     });
@@ -59,7 +74,7 @@ async function pushToServer() {
       const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
   
       const response = await fetch(SERVER_URL, {
-        method: 'PUT', // Or POST if creating new data
+        method: 'PUT', 
         headers: {
           'Content-Type': 'application/json'
         },
@@ -77,10 +92,8 @@ async function pushToServer() {
       showNotification("Error pushing data to server. Check the console for details.", "error");
     }
   }
-  
 
 // ... (showNotification function remains the same)
-
 // ... (rest of your code, including event listeners, etc.)
 
 // Initial sync and periodic sync
