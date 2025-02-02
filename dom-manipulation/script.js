@@ -61,19 +61,22 @@ function filterQuotes() {
   displayQuotes(filteredQuotes);
 }
 
-// Fetch quotes from the mock API (JSONPlaceholder)
-function fetchQuotesFromServer() {
-  fetch(API_URL)
-    .then(response => response.json())
-    .then(data => {
-      // Simulating response: Convert data to match the quote structure
-      const serverQuotes = data.map(post => ({
-        text: post.title, // Using post.title as quote text
-        category: post.body.split(' ')[0], // Using the first word of post.body as category
-      }));
-      handleDataSync(serverQuotes);
-    })
-    .catch(error => console.error('Error fetching quotes from the server:', error));
+// Fetch quotes from the mock API (JSONPlaceholder) using async/await
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(API_URL); // Await the fetch request
+    const data = await response.json(); // Await the response and parse as JSON
+
+    // Simulating response: Convert data to match the quote structure
+    const serverQuotes = data.map(post => ({
+      text: post.title, // Using post.title as quote text
+      category: post.body.split(' ')[0], // Using the first word of post.body as category
+    }));
+
+    handleDataSync(serverQuotes); // Handle data synchronization with local storage
+  } catch (error) {
+    console.error('Error fetching quotes from the server:', error); // Handle any errors
+  }
 }
 
 // Sync data between server and localStorage
