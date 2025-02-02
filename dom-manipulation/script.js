@@ -47,13 +47,16 @@ function filterQuotes() {
     if (filteredQuotes.length === 0) {
         quoteDisplay.innerHTML = "<p>No quotes available for this category.</p>";
     } else {
-        filteredQuotes.forEach(quote => {
-            let quoteElement = document.createElement("p");
-            quoteElement.innerHTML = `${quote.text} - <strong>${quote.category}</strong>`;
-            quoteDisplay.appendChild(quoteElement);
-        });
+        // اختيار اقتباس عشوائي واحد فقط من الفئة المحددة
+        const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+        let selectedQuote = filteredQuotes[randomIndex];
+
+        let quoteElement = document.createElement("p");
+        quoteElement.innerHTML = `${selectedQuote.text} - <strong>${selectedQuote.category}</strong>`;
+        quoteDisplay.appendChild(quoteElement);
     }
 }
+
 
 // إضافة اقتباس جديد وتحديث القائمة
 function addQuote() {
