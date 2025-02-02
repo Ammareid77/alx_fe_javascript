@@ -3,84 +3,88 @@
 
 const SERVER_URL = 'https://my-json-server.typicode.com/your-username/your-repo/quotes'; // Replace with your JSON Server URL
 
-async function syncWithServer() {
+async function fetchQuotesFromServer() {
     try {
         const response = await fetch(SERVER_URL);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const serverQuotes = await response.json();
-
-        const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
-
-        // Basic Conflict Resolution (Server wins - replace with your logic)
-        localStorage.setItem('quotes', JSON.stringify(serverQuotes));
-        quotes = serverQuotes; // Update the local quotes array
-
-        populateCategories(); // Update categories in the dropdown
-        filterQuotes(); // Refresh the displayed quotes
-
-        console.log("Data synced with server.");
-        showNotification("Data synced successfully!"); // Show notification
-
+        return serverQuotes;
     } catch (error) {
-        console.error("Error syncing with server:", error);
-        showNotification("Error syncing with server. Check the console for details.", "error");
+        console.error("Error fetching quotes from server:", error);
+        showNotification("Error fetching quotes from server. Check the console.", "error");
+        return null; // Or handle the error as needed
     }
+}
+
+async function syncWithServer() {
+    const serverQuotes = await fetchQuotesFromServer();
+
+    if (serverQuotes === null) {  // Handle fetch error
+        return;
+    }
+
+    const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+
+    // *** CONFLICT RESOLUTION LOGIC (Example - Replace with your own) ***
+    const mergedQuotes = mergeQuotes(localQuotes, serverQuotes); // See mergeQuotes function below
+
+    localStorage.setItem('quotes', JSON.stringify(mergedQuotes));
+    quotes = mergedQuotes;
+
+    populateCategories();
+    filterQuotes();
+
+    console.log("Data synced with server.");
+    showNotification("Data synced successfully!");
+}
+
+
+function mergeQuotes(localQuotes, serverQuotes) {
+    // Example: Simple merge (add new quotes, keep existing ones)
+    const merged = [...localQuotes]; // Start with local quotes
+
+    serverQuotes.forEach(serverQuote => {
+        const existsLocally = localQuotes.some(localQuote => localQuote.text === serverQuote.text);
+        if (!existsLocally) { // If the server quote is not in local storage, add it.
+            merged.push(serverQuote);
+        }
+    });
+    return merged;
 }
 
 async function pushToServer() {
-  try {
-    const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
-
-    const response = await fetch(SERVER_URL, {
-      method: 'PUT', // Or POST if creating new data
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(localQuotes)
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+      const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+  
+      const response = await fetch(SERVER_URL, {
+        method: 'PUT', // Or POST if creating new data
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(localQuotes)
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      console.log("Data pushed to server.");
+      showNotification("Data pushed to server successfully!");
+    } catch (error) {
+      console.error("Error pushing to server:", error);
+      showNotification("Error pushing data to server. Check the console for details.", "error");
     }
-
-    console.log("Data pushed to server.");
-    showNotification("Data pushed to server successfully!");
-  } catch (error) {
-    console.error("Error pushing to server:", error);
-    showNotification("Error pushing data to server. Check the console for details.", "error");
   }
-}
+  
 
+// ... (showNotification function remains the same)
 
-// Notification Function
-function showNotification(message, type = "info") {
-    const notification = document.createElement('div');
-    notification.classList.add('notification', type); // Add 'error' class for errors
-    notification.textContent = message;
-    document.body.appendChild(notification);
+// ... (rest of your code, including event listeners, etc.)
 
-    // Remove notification after a few seconds
-    setTimeout(() => {
-        notification.remove();
-    }, 5000); // 5 seconds
-}
-
-
-// ... (rest of your code)
-
-// Call syncWithServer initially and periodically
+// Initial sync and periodic sync
 syncWithServer();
-setInterval(syncWithServer, 10000); // Sync every 10 seconds (adjust as needed)
+setInterval(syncWithServer, 10000); // Adjust interval as needed
 
-
-const syncButton = document.createElement('button');
-syncButton.textContent = 'Sync with Server';
-syncButton.onclick = syncWithServer;
-document.body.appendChild(syncButton);
-
-const pushButton = document.createElement('button');
-pushButton.textContent = 'Push to Server';
-pushButton.onclick = pushToServer;
-document.body.appendChild(pushButton);
+// ... (sync and push buttons remain the same)
