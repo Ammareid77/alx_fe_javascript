@@ -1,123 +1,86 @@
-// تحميل الاقتباسات من Local Storage أو استخدام القيم الافتراضية
-let quotes = JSON.parse(localStorage.getItem("quotes")) || [
-    { text: "The best way to predict the future is to invent it.", category: "Motivation" },
-    { text: "Life is what happens when you're busy making other plans.", category: "Life" },
-    { text: "Success is not the key to happiness. Happiness is the key to success.", category: "Success" }
-];
+// script.js
+// ... (previous code: quotes array, local/session storage, DOM manipulation, filtering)
 
-// حفظ الاقتباسات إلى Local Storage
-function saveQuotes() {
-    localStorage.setItem("quotes", JSON.stringify(quotes));
+const SERVER_URL = 'https://my-json-server.typicode.com/your-username/your-repo/quotes'; // Replace with your JSON Server URL
+
+async function syncWithServer() {
+    try {
+        const response = await fetch(SERVER_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const serverQuotes = await response.json();
+
+        const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+
+        // Basic Conflict Resolution (Server wins - replace with your logic)
+        localStorage.setItem('quotes', JSON.stringify(serverQuotes));
+        quotes = serverQuotes; // Update the local quotes array
+
+        populateCategories(); // Update categories in the dropdown
+        filterQuotes(); // Refresh the displayed quotes
+
+        console.log("Data synced with server.");
+        showNotification("Data synced successfully!"); // Show notification
+
+    } catch (error) {
+        console.error("Error syncing with server:", error);
+        showNotification("Error syncing with server. Check the console for details.", "error");
+    }
 }
 
-// ملء قائمة التصفية بالفئات المتاحة
-function populateCategories() {
-    const categoryFilter = document.getElementById("categoryFilter");
-    categoryFilter.innerHTML = '<option value="all">All Categories</option>'; // إعادة تعيين الفئات
+async function pushToServer() {
+  try {
+    const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
 
-    let categories = new Set(quotes.map(quote => quote.category)); // استخراج الفئات الفريدة
-
-    categories.forEach(category => {
-        let option = document.createElement("option");
-        option.value = category;
-        option.textContent = category;
-        categoryFilter.appendChild(option);
+    const response = await fetch(SERVER_URL, {
+      method: 'PUT', // Or POST if creating new data
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(localQuotes)
     });
 
-    // استعادة الفئة المحددة سابقًا من Local Storage
-    const savedCategory = localStorage.getItem("selectedCategory");
-    if (savedCategory) {
-        categoryFilter.value = savedCategory;
-        filterQuotes(); // تطبيق التصفية تلقائيًا
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-}
 
-// تصفية الاقتباسات حسب الفئة المحددة
-function filterQuotes() {
-    const selectedCategory = document.getElementById("categoryFilter").value;
-    localStorage.setItem("selectedCategory", selectedCategory); // حفظ الفئة المحددة في Local Storage
-
-    const quoteDisplay = document.getElementById("quoteDisplay");
-    quoteDisplay.innerHTML = ""; // تفريغ العرض
-
-    let filteredQuotes = selectedCategory === "all"
-        ? quotes
-        : quotes.filter(quote => quote.category === selectedCategory);
-
-    if (filteredQuotes.length === 0) {
-        quoteDisplay.innerHTML = "<p>No quotes available for this category.</p>";
-    } else {
-        // اختيار اقتباس عشوائي واحد فقط من الفئة المحددة
-        const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
-        let selectedQuote = filteredQuotes[randomIndex];
-
-        let quoteElement = document.createElement("p");
-        quoteElement.innerHTML = `${selectedQuote.text} - <strong>${selectedQuote.category}</strong>`;
-        quoteDisplay.appendChild(quoteElement);
-    }
+    console.log("Data pushed to server.");
+    showNotification("Data pushed to server successfully!");
+  } catch (error) {
+    console.error("Error pushing to server:", error);
+    showNotification("Error pushing data to server. Check the console for details.", "error");
+  }
 }
 
 
-// إضافة اقتباس جديد وتحديث القائمة
-function addQuote() {
-    const quoteText = document.getElementById("newQuoteText").value.trim();
-    const quoteCategory = document.getElementById("newQuoteCategory").value.trim();
+// Notification Function
+function showNotification(message, type = "info") {
+    const notification = document.createElement('div');
+    notification.classList.add('notification', type); // Add 'error' class for errors
+    notification.textContent = message;
+    document.body.appendChild(notification);
 
-    if (quoteText && quoteCategory) {
-        quotes.push({ text: quoteText, category: quoteCategory });
-        saveQuotes(); // تحديث Local Storage
-        populateCategories(); // تحديث قائمة الفئات
-        filterQuotes(); // إعادة تطبيق التصفية بعد الإضافة
-
-        document.getElementById("newQuoteText").value = "";
-        document.getElementById("newQuoteCategory").value = "";
-        alert("Quote added successfully!");
-    } else {
-        alert("Please enter both a quote and a category.");
-    }
+    // Remove notification after a few seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 5000); // 5 seconds
 }
 
-// تصدير الاقتباسات إلى ملف JSON
-function exportToJsonFile() {
-    const dataStr = JSON.stringify(quotes, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "quotes.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
+// ... (rest of your code)
 
-// استيراد الاقتباسات من ملف JSON
-function importFromJsonFile(event) {
-    const fileReader = new FileReader();
-    fileReader.onload = function (event) {
-        try {
-            const importedQuotes = JSON.parse(event.target.result);
-            if (Array.isArray(importedQuotes)) {
-                quotes.push(...importedQuotes);
-                saveQuotes();
-                populateCategories(); // تحديث القائمة بالفئات الجديدة
-                filterQuotes(); // إعادة تطبيق التصفية بعد الاستيراد
-                alert("Quotes imported successfully!");
-            } else {
-                alert("Invalid file format. Please upload a valid JSON file.");
-            }
-        } catch (error) {
-            alert("Error reading the file. Please upload a valid JSON.");
-        }
-    };
-    fileReader.readAsText(event.target.files[0]);
-}
+// Call syncWithServer initially and periodically
+syncWithServer();
+setInterval(syncWithServer, 10000); // Sync every 10 seconds (adjust as needed)
 
-// تحميل آخر فئة محددة وتطبيق التصفية عند بدء التطبيق
-window.onload = function () {
-    populateCategories(); // ملء قائمة الفئات
-    filterQuotes(); // تطبيق التصفية عند تحميل الصفحة
-};
 
-// ربط زر عرض اقتباس جديد بالوظيفة
-document.getElementById("newQuote").addEventListener("click", filterQuotes);
+const syncButton = document.createElement('button');
+syncButton.textContent = 'Sync with Server';
+syncButton.onclick = syncWithServer;
+document.body.appendChild(syncButton);
+
+const pushButton = document.createElement('button');
+pushButton.textContent = 'Push to Server';
+pushButton.onclick = pushToServer;
+document.body.appendChild(pushButton);
