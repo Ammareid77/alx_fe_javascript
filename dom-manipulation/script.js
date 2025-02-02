@@ -76,25 +76,30 @@ async function fetchQuotesFromServer() {
       category: post.body.split(' ')[0], // Using the first word of post.body as category
     }));
 
-    handleDataSync(serverQuotes); // Handle data synchronization with local storage
+    syncQuotes(serverQuotes); // Call syncQuotes to merge local and server data
   } catch (error) {
     console.error('Error fetching quotes from the server:', error); // Handle any errors
   }
 }
 
-// Sync data between server and localStorage
-function handleDataSync(serverQuotes) {
-  const updatedQuotes = serverQuotes.map(serverQuote => {
-    const matchingQuote = quotes.find(localQuote => localQuote.text === serverQuote.text);
-    return matchingQuote ? serverQuote : serverQuote; // If match found, take server data
+// Sync local quotes with the server data and handle potential conflicts
+function syncQuotes(serverQuotes) {
+  // Compare local and server quotes to merge data, prioritize server data in case of conflict
+  const mergedQuotes = serverQuotes.map(serverQuote => {
+    const matchingLocalQuote = quotes.find(localQuote => localQuote.text === serverQuote.text);
+    if (matchingLocalQuote) {
+      return serverQuote; // Use server quote if there's a match
+    }
+    return serverQuote; // Otherwise, use the server quote
   });
 
-  quotes = updatedQuotes;
+  // Update quotes array with merged quotes
+  quotes = mergedQuotes;
   saveQuotes();
-  displayQuotes(updatedQuotes);
+  displayQuotes(mergedQuotes);
 
-  // Notify user
-  alert('Quotes have been updated from the server!');
+  // Notify the user that the quotes were updated from the server
+  alert('Quotes have been synchronized with the server!');
 }
 
 // Post the new quote to the mock API using POST method
