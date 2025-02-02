@@ -1,34 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Quote Generator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Quote Generator</title>
 </head>
 <body>
-    <h1>Dynamic Quote Generator</h1>
+  <h1>Dynamic Quote Generator</h1>
+  <div id="quoteDisplay"></div>
+  <button id="newQuote">Show New Quote</button>
 
-    <!-- قائمة تصفية الاقتباسات حسب الفئة -->
-    <label for="categoryFilter">Filter by Category:</label>
-    <select id="categoryFilter" onchange="filterQuotes()">
-        <option value="all">All Categories</option>
-    </select>
+  <!-- إضافة الفلاتر -->
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+    <!-- ستتم إضافة الفئات هنا -->
+  </select>
 
-    <!-- عرض الاقتباسات -->
-    <div id="quoteDisplay"></div>
-    <button id="newQuote">Show New Quote</button>
+  <div>
+    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+    <button onclick="addQuote()">Add Quote</button>
+  </div>
 
-    <!-- نموذج لإضافة اقتباسات جديدة -->
-    <div>
-        <input id="newQuoteText" type="text" placeholder="Enter a new quote">
-        <input id="newQuoteCategory" type="text" placeholder="Enter quote category">
-        <button onclick="addQuote()">Add Quote</button>
-    </div>
-
-    <!-- أزرار تصدير واستيراد JSON -->
-    <button onclick="exportToJsonFile()">Export Quotes</button>
-    <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
-
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
