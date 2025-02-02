@@ -99,7 +99,7 @@ function syncQuotes(serverQuotes) {
   displayQuotes(mergedQuotes);
 
   // Notify the user that the quotes were updated from the server
-  alert('Quotes have been synchronized with the server!');
+  showSyncNotification('Quotes synced with server!');
 }
 
 // Post the new quote to the mock API using POST method
@@ -120,22 +120,17 @@ async function postQuoteToServer(newQuote) {
   }
 }
 
-// Notify user of new updates
-function notifyUserOfConflict() {
+// Notify the user with a message in the UI
+function showSyncNotification(message) {
   const notification = document.createElement('div');
-  notification.textContent = 'New updates found. Do you want to sync data?';
+  notification.textContent = message;
   notification.classList.add('notification');
   document.body.appendChild(notification);
 
-  const syncButton = document.createElement('button');
-  syncButton.textContent = 'Sync Now';
-  syncButton.onclick = function() {
-    fetchQuotesFromServer();
+  // Remove notification after 5 seconds
+  setTimeout(() => {
     notification.remove();
-  };
-  notification.appendChild(syncButton);
-
-  setTimeout(() => notification.remove(), 10000); // Remove notification after 10 seconds
+  }, 5000);
 }
 
 // Load quotes when the page loads
