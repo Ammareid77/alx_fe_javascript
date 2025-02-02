@@ -1,4 +1,4 @@
-const API_URL = 'https://jsonplaceholder.typicode.com/posts'; // Mock API to fetch data from
+const API_URL = 'https://jsonplaceholder.typicode.com/posts'; // Mock API to fetch and post data
 let quotes = JSON.parse(localStorage.getItem('quotes')) || []; // Get quotes from localStorage
 
 // Function to display quotes
@@ -29,6 +29,9 @@ function addQuote() {
     quotes.push(newQuote);
     saveQuotes();
     displayQuotes(quotes);
+    
+    // Post the new quote to the mock API
+    postQuoteToServer(newQuote);
   }
 }
 
@@ -92,6 +95,24 @@ function handleDataSync(serverQuotes) {
 
   // Notify user
   alert('Quotes have been updated from the server!');
+}
+
+// Post the new quote to the mock API using POST method
+async function postQuoteToServer(newQuote) {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST', // Use POST method to send data
+      headers: {
+        'Content-Type': 'application/json', // Set content type as JSON
+      },
+      body: JSON.stringify(newQuote), // Convert newQuote to JSON format for sending
+    });
+
+    const data = await response.json(); // Parse the response as JSON
+    console.log('Quote posted successfully:', data); // Log response from the server
+  } catch (error) {
+    console.error('Error posting quote to the server:', error); // Handle any errors
+  }
 }
 
 // Notify user of new updates
