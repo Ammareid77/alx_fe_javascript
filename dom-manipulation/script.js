@@ -10,27 +10,52 @@ function saveQuotes() {
     localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// عرض اقتباس عشوائي وحفظه في Session Storage
-function showRandomQuote() {
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    const selectedQuote = quotes[randomIndex];
-    document.getElementById("quoteDisplay").innerHTML = `<p>${selectedQuote.text} - <strong>${selectedQuote.category}</strong></p>`;
+// ملء قائمة التصفية بالفئات المتاحة
+function populateCategories() {
+    const categoryFilter = document.getElementById("categoryFilter");
+    categoryFilter.innerHTML = '<option value="all">All Categories</option>'; // إعادة تعيين الفئات
 
-    // حفظ آخر اقتباس في Session Storage
-    sessionStorage.setItem("lastQuote", JSON.stringify(selectedQuote));
-}
+    let categories = new Set(quotes.map(quote => quote.category)); // استخراج الفئات الفريدة
 
-// استعادة آخر اقتباس عند إعادة تحميل الصفحة
-function loadLastQuote() {
-    const lastQuote = JSON.parse(sessionStorage.getItem("lastQuote"));
-    if (lastQuote) {
-        document.getElementById("quoteDisplay").innerHTML = `<p>${lastQuote.text} - <strong>${lastQuote.category}</strong></p>`;
-    } else {
-        showRandomQuote();
+    categories.forEach(category => {
+        let option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+    });
+
+    // استعادة الفئة المحددة سابقًا من Local Storage
+    const savedCategory = localStorage.getItem("selectedCategory");
+    if (savedCategory) {
+        categoryFilter.value = savedCategory;
+        filterQuotes(); // تطبيق التصفية تلقائيًا
     }
 }
 
-// إضافة اقتباس جديد إلى Local Storage
+// تصفية الاقتباسات حسب الفئة المحددة
+function filterQuotes() {
+    const selectedCategory = document.getElementById("categoryFilter").value;
+    localStorage.setItem("selectedCategory", selectedCategory); // حفظ الفئة المحددة في Local Storage
+
+    const quoteDisplay = document.getElementById("quoteDisplay");
+    quoteDisplay.innerHTML = ""; // تفريغ العرض
+
+    let filteredQuotes = selectedCategory === "all"
+        ? quotes
+        : quotes.filter(quote => quote.category === selectedCategory);
+
+    if (filteredQuotes.length === 0) {
+        quoteDisplay.innerHTML = "<p>No quotes available for this category.</p>";
+    } else {
+        filteredQuotes.forEach(quote => {
+            let quoteElement = document.createElement("p");
+            quoteElement.innerHTML = `${quote.text} - <strong>${quote.category}</strong>`;
+            quoteDisplay.appendChild(quoteElement);
+        });
+    }
+}
+
+// إضافة اقتباس جديد وتحديث القائمة
 function addQuote() {
     const quoteText = document.getElementById("newQuoteText").value.trim();
     const quoteCategory = document.getElementById("newQuoteCategory").value.trim();
@@ -38,6 +63,9 @@ function addQuote() {
     if (quoteText && quoteCategory) {
         quotes.push({ text: quoteText, category: quoteCategory });
         saveQuotes(); // تحديث Local Storage
+        populateCategories(); // تحديث قائمة الفئات
+        filterQuotes(); // إعادة تطبيق التصفية بعد الإضافة
+
         document.getElementById("newQuoteText").value = "";
         document.getElementById("newQuoteCategory").value = "";
         alert("Quote added successfully!");
@@ -69,6 +97,8 @@ function importFromJsonFile(event) {
             if (Array.isArray(importedQuotes)) {
                 quotes.push(...importedQuotes);
                 saveQuotes();
+                populateCategories(); // تحديث القائمة بالفئات الجديدة
+                filterQuotes(); // إعادة تطبيق التصفية بعد الاستيراد
                 alert("Quotes imported successfully!");
             } else {
                 alert("Invalid file format. Please upload a valid JSON file.");
@@ -80,10 +110,11 @@ function importFromJsonFile(event) {
     fileReader.readAsText(event.target.files[0]);
 }
 
-// تحميل آخر اقتباس عند بدء التطبيق
+// تحميل آخر فئة محددة وتطبيق التصفية عند بدء التطبيق
 window.onload = function () {
-    loadLastQuote();
+    populateCategories(); // ملء قائمة الفئات
+    filterQuotes(); // تطبيق التصفية عند تحميل الصفحة
 };
 
-// ربط زر إظهار اقتباس جديد بالوظيفة
-document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+// ربط زر عرض اقتباس جديد بالوظيفة
+document.getElementById("newQuote").addEventListener("click", filterQuotes);

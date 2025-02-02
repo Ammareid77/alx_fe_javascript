@@ -8,6 +8,12 @@
 <body>
     <h1>Dynamic Quote Generator</h1>
 
+    <!-- قائمة تصفية الاقتباسات حسب الفئة -->
+    <label for="categoryFilter">Filter by Category:</label>
+    <select id="categoryFilter" onchange="filterQuotes()">
+        <option value="all">All Categories</option>
+    </select>
+
     <!-- عرض الاقتباسات -->
     <div id="quoteDisplay"></div>
     <button id="newQuote">Show New Quote</button>
@@ -19,7 +25,7 @@
         <button onclick="addQuote()">Add Quote</button>
     </div>
 
-    <!-- أزرار التصدير والاستيراد -->
+    <!-- أزرار تصدير واستيراد JSON -->
     <button onclick="exportToJsonFile()">Export Quotes</button>
     <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
 
