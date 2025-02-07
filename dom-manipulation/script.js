@@ -110,7 +110,7 @@ async function postQuoteToServer(newQuote) {
       headers: {
         'Content-Type': 'application/json', // Set content type as JSON
       },
-      body: JSON.stringify(newQuote), // Convert newQuote to JSON format for sending
+      body: JSON.stringify(Blob), // Convert newQuote to JSON format for sending
     });
 
     const data = await response.json(); // Parse the response as JSON
