@@ -13,7 +13,7 @@ function displayQuotes(quotesToDisplay) {
 }
 
 // Function to show random quote
-function showRandomQuote() {
+function showRandomQuote(addEventListener) {
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const quote = quotes[randomIndex];
   alert(`"${quote.text}" - ${quote.category}`);
